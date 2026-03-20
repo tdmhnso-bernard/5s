@@ -284,9 +284,9 @@
                                 </div>
                                 <div class="flex flex-col gap-2 w-full md:w-auto md:min-w-[280px]">
                                     <div class="flex gap-1 compliance-buttons">
-                                        <button onclick="updateCompliance('${id}', 'P')" id="btn-${id}-P" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">P (Yes)</button>
-                                        <button onclick="updateCompliance('${id}', 'X')" id="btn-${id}-X" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">X (No)</button>
-                                        <button onclick="updateCompliance('${id}', 'N/A')" id="btn-${id}-N/A" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-100 border-gray-300">N/A</button>
+                                        <button onclick="updateCompliance('${id}', 'P')" id="btn-${id}-P" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">P (Compliant)</button>
+                                        <button onclick="updateCompliance('${id}', 'x')" id="btn-${id}-x" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">x (Non-Compliant)</button>
+                                        <button onclick="updateCompliance('${id}', 'N/A')" id="btn-${id}-N/A" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-100 border-gray-300">N/A (Not Applicable)</button>
                                         
                                         <!-- Photo Input for this specific item -->
                                         <div class="relative">
@@ -335,14 +335,16 @@
         function updateCompliance(id, code) {
             auditData[id].code = code;
             auditData[id].compliance = code === 'P' ? 1 : 0;
-            ['P', 'X', 'N/A'].forEach(c => {
+            ['P', 'x', 'N/A'].forEach(c => {
                 const btn = document.getElementById(`btn-${id}-${c}`);
-                btn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold " + (c === 'N/A' ? "bg-gray-100 border-gray-300" : "bg-white");
+                if (btn) btn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold " + (c === 'N/A' ? "bg-gray-100 border-gray-300" : "bg-white");
             });
             const activeBtn = document.getElementById(`btn-${id}-${code}`);
-            if(code === 'P') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-green-600 text-white border-green-700 shadow-inner";
-            if(code === 'X') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-red-600 text-white border-red-700 shadow-inner";
-            if(code === 'N/A') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-500 text-white border-gray-600 shadow-inner";
+            if(activeBtn) {
+                if(code === 'P') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-green-600 text-white border-green-700 shadow-inner";
+                if(code === 'x') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-red-600 text-white border-red-700 shadow-inner";
+                if(code === 'N/A') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-500 text-white border-gray-600 shadow-inner";
+            }
             calculateScores();
         }
 
