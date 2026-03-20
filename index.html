@@ -70,12 +70,12 @@
                     <span class="uppercase tracking-wide">Additional Information</span>
                     <button onclick="autoGenerateObservations()" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] py-1 px-3 rounded flex items-center gap-1 shadow-sm transition-all">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        GENERATE OBSERVATIONS
+                        GENERATE DETAILED OBSERVATIONS
                     </button>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Overall Audit Observations (Automated Summary)</label>
-                    <textarea id="additional_notes" rows="6" class="w-full border rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-400 outline-none" placeholder="Click 'Generate Observations' to automatically summarize findings or type here manually..."></textarea>
+                    <label class="block text-sm font-semibold mb-1">Overall Audit Observations (Narrative Report)</label>
+                    <textarea id="additional_notes" rows="8" class="w-full border rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-400 outline-none leading-relaxed" placeholder="Click 'GENERATE' for a detailed finding report based on your audit..."></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1">General Audit Photo (Header Evidence)</label>
@@ -148,7 +148,7 @@
         const SECTIONS = [
             {
                 title: "SORT ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Unnecessary items present", "Broken furniture", "Waste mixed", "Expired items"],
+                remarks: ["Compliant", "Unnecessary items present", "Broken furniture found", "Obsolete docs not sorted", "Waste mixed (Black/Yellow)", "Expired items found"],
                 items: [
                     "1) Only necessary items/materials, etc. are present at the work area. Items not required are removed from the workplace or properly tagged.",
                     "2) All broken or unnecessary chairs, shelves, lockers, workbenches, etc., not required is removed from the workplace.",
@@ -159,7 +159,7 @@
             },
             {
                 title: "SET IN ORDER ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Label missing", "No asset tag", "PPE label missing", "Switches blocked"],
+                remarks: ["Compliant", "Out of reach", "No asset tag", "PPE label missing", "Breakers blocked", "Lines faded/missing", "Messy storage"],
                 items: [
                     "6) Supplies and supplies have designated storage location that is within reach. The location is properly labeled and supplies are easily identified.",
                     "7) Furniture/Equipment is clearly identified (with asset tag).",
@@ -170,74 +170,74 @@
             },
             {
                 title: "SHINE ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Dust/Dirt", "Needs painting", "Clutter", "Stains visible"],
+                remarks: ["Compliant", "Dust/Dirt found", "Surfaces unpainted", "Schedule missing", "PPE unsanitary", "Not stacked neatly"],
                 items: [
-                    "11) Equipment/Supplies are kept clean and in good working condition.",
+                    "11) Equipment/Supplies are kept clean and in good working condition. Where possible, Equipment/supplies are stored in a manner to keep them clean and free from risk of damage.",
                     "12) Files are kept clean and protected from dirt.",
-                    "13) Work surfaces are clean and painted.",
+                    "13) Work surfaces [machines, workbenches and other equipment including electrical boxes] are clean and painted.",
                     "14) Walls, partitions, railings, etc are kept clean.",
-                    "16) There is a cleaning schedule showing times/frequency.",
-                    "17) All cleaning equipment/materials are stored.",
-                    "18) PPE is maintained in sanitary condition.",
-                    "19) Containers, boxes, bins are free from dents/stains."
+                    "16) There is a schedule showing times, frequency and responsibilities to clean areas of the workplace such as windows, corners, walls, doors, top of cabinets, etc.",
+                    "17) All cleaning equipment/materials are stored and readily available when needed.",
+                    "18) All personal protective equipment is maintained in sanitary and reliable condition and is properly stored in an easy accessible and labeled location when not in use.",
+                    "19) Containers, boxes, bins, etc. are free from dents and stains. They are neatly stacked"
                 ]
             },
             {
                 title: "STANDARDIZE ACTIVITY DESCRIPTION",
-                remarks: ["Compliant", "No revision date", "PM delayed", "Previous audit missing", "Poor lighting"],
+                remarks: ["Compliant", "No revision date", "PM not updated", "Prev. issues open", "Poor light/vent", "FIFO/FEFO violation", "Wrong disposal method"],
                 items: [
-                    "20) Documents are labeled clearly with dates/revisions.",
-                    "21) Preventive maintenance/calibration plans are carried out.",
-                    "22) Results of previous audit are available.",
-                    "23) Areas for improvement have been resolved.",
+                    "20) Documents are labeled clearly as to contents and responsibility for control and revision. The date and revision number are clearly visible.",
+                    "21) Preventive maintenance/calibration plans are carried out as planned.",
+                    "22) The results of the previous audit are available when needed.",
+                    "23) Areas for improvement identified during the previous audit have been resolved/corrected.",
                     "24) Work area lighting is appropriate.",
                     "25) Work ventillation is appropriate.",
-                    "26) Disposal of records in accordance to retention period.",
-                    "27) Unit follows requisition day schedule.",
-                    "28) Unit follows FIFO or FEFO policy.",
-                    "29) Supplies/equipment are stored in designated areas."
+                    "26) Disposal of records in accordance to retention period on the List of Quality Records [Disposal Method]",
+                    "27) Unit follows the requisition day schedule of Central Store and Purchasing Department.",
+                    "28) Unit follows First-in, First out policy or First to Expire, First Out as applicable.",
+                    "29) Supplies, equipment, files, ,etc. are stored in designated areas and are returned immediately after use."
                 ]
             },
             {
                 title: "SUSTAIN ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "No weekly check", "No initiative", "Uniform violation", "Phone etiquette poor"],
+                remarks: ["Compliant", "Weekly check skipped", "No improvements", "No seminar/training", "Uniform/ID violation", "Phone etiquette poor"],
                 items: [
-                    "30) Unit heads perform 5S at least once/week.",
-                    "31) Team took initiative for improvements.",
-                    "32) Unit participated in a 5S activity.",
-                    "33) Personnel wears uniform and ID.",
-                    "34) Personnel follows Customer Responses-Telephone."
+                    "30) Unit/department heads are tasked to perform 5S Activities at least once/week. Resources are allocated to perform 5S activities. [e.g. designated daily/weekly/clean-up time, 5S team leader, etc.]",
+                    "31) The team took the initiative to make improvements to the workplace that were not identified during the last 5S audit.",
+                    "32) The unit has participated in a 5S activity. [e.g. attended Orientation on 5S Seminar]",
+                    "33) TDMH personnel wears their prescribed uniform and identification card.",
+                    "34) TDMH personnel follows the TDMH Standard Customer Responses-Telephone Communications."
                 ]
             },
             {
                 title: "SAFETY ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Fire ext blocked", "Exits blocked", "Wires messy", "Safety kit incomplete"],
+                remarks: ["Compliant", "Fire ext blocked", "Route not posted", "Wires messy", "Sharps >3/4 full", "Drill failed", "Chart missing"],
                 items: [
                     "35) Fire extinguishers are visible",
                     "36) Evacuation routes are prominently posted.",
                     "37) Emergency exits are visible and in working condition",
                     "38) Emergency phone numbers are prominently posted.",
-                    "39) All wires and cables are well organized.",
-                    "40) Personnel received safety training.",
-                    "41) Personnel understood Safety Manual.",
-                    "42) Personnel trained on Infection Control.",
-                    "43) Unit SPDPC Functional Chart posted",
-                    "44) Safety devices are in good working condition",
-                    "45) Disaster Preparedness Checklist posted",
+                    "39) All wires and cables are well organized and stowed.",
+                    "40) TDMH personnel have received appropriate safety training [e.g. Fire Drills, Earthquake]",
+                    "41) TDMH personnel understood and implement the TDMH Health and Safety Manual.",
+                    "42) TDMH personnel have received appropriate training on Infection Prevention and Control.",
+                    "43) Unit SPDPC Functional Chart prominently posted",
+                    "44) Fire extinguisher and other safety devices are in good working condition and in reach",
+                    "45) Disaster Preparedness Checklist (Safety Checklist) are prominently posted",
                     "46) Presence of To Go Kit",
                     "47) Employee can perform duck, cover and hold.",
-                    "48) Updated Staff Demographic Data",
-                    "49) Sharps container replaced when 3/4 full."
+                    "48) The Unit has an updated TDMH Staff Demographic Data",
+                    "49) Disposal sharps container should be replaced when its 3/4 full."
                 ]
             },
             {
                 title: "SAVE THE ENVIRONMENT ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "AC left on", "Lights left on", "Paper waste high", "Faucets leaking"],
+                remarks: ["Compliant", "AC on during break", "Lights on during break", "Paper waste high", "Leaking pipes/faucets"],
                 items: [
-                    "50) Airconditioning units turned off during breaktime.",
-                    "51) Unnecessary lights turned off during breaktime.",
-                    "52) Use of Softcopy to reduce paper usage.",
-                    "53) Maintenance of pipes and faucets monitored."
+                    "50) Airconditioning units are turned off during breaktime.",
+                    "51) Unnecessary lights are turned off during breaktime.",
+                    "52) Use of Softcopy as a source of file dissemination to reduce usage of paper.",
+                    "53) Maintenance of pipes and faucets are being monitored to prevent leaks and spills and to help conserve water."
                 ]
             }
         ];
@@ -384,20 +384,30 @@
 
             Object.keys(auditData).forEach(id => {
                 if (auditData[id].code === 'x') {
-                    let remark = auditData[id].remarks || "needs improvement";
-                    findings.push(`Item #${id}: ${remark}`);
+                    // Extract question text without the leading ID number
+                    let question = auditData[id].questionText;
+                    let remark = auditData[id].remarks ? ` Findings: ${auditData[id].remarks}` : " Findings: Requirement not met.";
+                    findings.push(`• [${id}] ${question}\n  ${remark}`);
                 }
             });
 
-            let summary = `TDMH 5S+3 Audit Summary for ${dept}:\n`;
-            summary += `Overall Compliance Score: ${score} (${rating} Level).\n\n`;
+            let summary = `5S + 3 AUDIT OBSERVATION REPORT\n`;
+            summary += `==================================================\n`;
+            summary += `DEPARTMENT: ${dept.toUpperCase()}\n`;
+            summary += `FINAL COMPLIANCE SCORE: ${score}\n`;
+            summary += `RATING LEVEL: ${rating}\n`;
+            summary += `==================================================\n\n`;
 
             if (findings.length > 0) {
-                summary += `Findings & Areas for Improvement:\n`;
-                findings.forEach(f => summary += `- ${f}\n`);
-                summary += `\nRecommended Action: Department is advised to resolve the non-compliant items listed above prior to the next weekly review.`;
+                summary += `THE FOLLOWING NON-COMPLIANT AREAS WERE IDENTIFIED:\n\n`;
+                findings.forEach(f => summary += `${f}\n\n`);
+                summary += `RECOMMENDATIONS & CORRECTIVE ACTIONS:\n`;
+                summary += `1. Immediate rectification is required for all non-compliant requirements identified above.\n`;
+                summary += `2. Department heads must verify corrections and conduct a short follow-up briefing with unit staff.\n`;
+                summary += `3. Sustained effort is encouraged to maintain hospital-wide safety and organization standards.`;
             } else {
-                summary += `No non-compliant items were identified during this audit. The department maintains high standards of 5S+3 workplace organization and safety.`;
+                summary += `EXCELLENT ADHERENCE OBSERVED:\n\n`;
+                summary += `No non-compliant items were identified during this audit cycle. The department demonstrates full compliance with TDMH 5S+3 workplace organization and safety protocols. All areas inspected were found to be in optimal condition.`;
             }
 
             document.getElementById('additional_notes').value = summary;
