@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5S + 3 Audit Checklist (QIQ-F-011)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .signature-pad { border: 2px dashed #cbd5e1; border-radius: 8px; background: white; cursor: crosshair; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .category-header { border-left: 8px solid #facc15; }
+        
+        @media print { .no-print { display: none; } .print-only { display: block !important; } }
+        .print-only { display: none; }
+        
+        #sync-toast { position: fixed; bottom: 20px; right: 20px; z-index: 1000; transform: translateY(100px); transition: transform 0.3s ease; }
+        #sync-toast.show { transform: translateY(0); }
+
+        .img-preview { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #e2e8f0; display: none; }
+    </style>
+</head>
+<body class="pb-20">
+
+    <!-- Sync Status Toast -->
+    <div id="sync-toast" class="bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+        <div id="sync-spinner" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+        <p id="sync-message" class="text-xs font-bold uppercase tracking-wider">Syncing to Google Sheets...</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-md no-print">
+        <div class="flex items-center gap-2">
+            <div class="bg-yellow-400 p-2 rounded shadow-sm">
+                <i class="fa-solid fa-clipboard-check text-slate-900"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black leading-none text-slate-900">5S + 3 AUDIT</h1>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Form QIQ-F-011, Ø</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="switchTab('audit')" id="btn-audit" class="px-4 py-2 bg-slate-900 text-white rounded font-bold text-xs shadow-sm transition-all hover:bg-black">NEW AUDIT</button>
+            <button onclick="switchTab('reports')" id="btn-reports" class="px-4 py-2 bg-gray-100 text-gray-600 rounded font-bold text-xs transition-all hover:bg-gray-200">HISTORY</button>
+        </div>
+    </nav>
+
+    <!-- AUDIT FORM TAB -->
+    <main id="audit-tab" class="tab-content active p-4 max-w-6xl mx-auto">
+        
+        <!-- Document Header Info -->
+        <section class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Unit / Department</label>
+                    <input type="text" id="unitName" placeholder="Enter Unit Name" class="w-full p-2 border-b border-gray-200 focus:border-yellow-400 outline-none text-sm font-bold">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Lead Auditor</label>
+                    <input type="text" id="auditorName" placeholder="Full Name" class="w-full p-2 border-b border-gray-200 focus:border-yellow-400 outline-none text-sm font-bold">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Date of Audit</label>
+                    <input type="date" id="auditDate" class="w-full p-2 border-b border-gray-200 focus:border-yellow-400 outline-none text-sm font-bold">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Audit Level Goal</label>
+                    <select id="auditGoal" class="w-full p-2 border-b border-gray-200 focus:border-yellow-400 outline-none text-sm font-bold">
+                        <option>Quarterly Regular</option>
+                        <option>Spot Audit</option>
+                        <option>Follow-up</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Audit Questions -->
+        <div id="audit-questions" class="space-y-8"></div>
+
+        <!-- Grading & Scoring -->
+        <section class="mt-12 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden no-print">
+            <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black uppercase tracking-tight">Audit Summary</h2>
+                    <p class="text-slate-400 text-xs font-bold">Consolidated results for QIQ-F-011</p>
+                </div>
+                <div class="text-right">
+                    <p id="summary-score" class="text-5xl font-black text-yellow-400">0%</p>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div class="col-span-1">
+                        <h3 class="text-[11px] font-black text-slate-400 uppercase mb-4">Compliance Codes</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 border rounded-lg bg-emerald-50 border-emerald-100">
+                                <span class="font-black text-emerald-700">P</span>
+                                <span class="text-xs font-bold text-emerald-800 uppercase">Compliant</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 border rounded-lg bg-rose-50 border-rose-100">
+                                <span class="font-black text-rose-700">X</span>
+                                <span class="text-xs font-bold text-rose-800 uppercase">Non-Compliant</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 border rounded-lg bg-slate-50 border-slate-100">
+                                <span class="font-black text-slate-500">N/A</span>
+                                <span class="text-xs font-bold text-slate-600 uppercase">Not Applicable</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2">
+                        <h3 class="text-[11px] font-black text-slate-400 uppercase mb-4">Performance Rating</h3>
+                        <div id="rating-badge" class="h-full flex flex-col justify-center items-center p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 transition-all">
+                            <p id="level-text" class="text-4xl font-black text-slate-400">PENDING</p>
+                            <p id="level-desc" class="text-[10px] font-bold text-slate-500 uppercase mt-2">Complete all items to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Signatures -->
+        <section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 no-print">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-4">Auditor Team Signature</label>
+                <canvas id="sign-auditor" class="signature-pad w-full h-40"></canvas>
+                <button onclick="clearSign('sign-auditor')" class="text-[10px] font-black text-red-500 uppercase mt-2">Clear</button>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-4">Unit Head Acknowledgment</label>
+                <canvas id="sign-dept" class="signature-pad w-full h-40"></canvas>
+                <button onclick="clearSign('sign-dept')" class="text-[10px] font-black text-red-500 uppercase mt-2">Clear</button>
+            </div>
+        </section>
+
+        <button id="submit-btn" onclick="submitAudit()" class="w-full mt-10 bg-yellow-400 text-slate-900 font-black py-6 rounded-2xl shadow-2xl hover:bg-yellow-500 transition-all uppercase tracking-widest text-lg no-print">
+            Sync Findings to Google Sheets
+        </button>
+    </main>
+
+    <!-- REPORTS TAB -->
+    <main id="reports-tab" class="tab-content p-4 max-w-6xl mx-auto">
+        <div id="history-container" class="space-y-4">
+             <p class="text-center text-slate-400 py-20 font-bold uppercase tracking-widest">Local Session History</p>
+        </div>
+    </main>
+
+    <script>
+        // CONFIGURATION: Replace this with your Google App Script Web App URL
+        const scriptURL = ""; 
+
+        const remarkOptions = {
+            "SORT": [
+                { text: "Standards maintained", code: "P" },
+                { text: "Optimal sorting verified", code: "P" },
+                { text: "Unnecessary items found", code: "X" },
+                { text: "Segregation required", code: "X" }
+            ],
+            "SET IN ORDER": [
+                { text: "Excellent labeling system", code: "P" },
+                { text: "Items logically placed", code: "P" },
+                { text: "Labels missing/unclear", code: "X" },
+                { text: "Pathway/Access blocked", code: "X" }
+            ],
+            "SHINE": [
+                { text: "Workplace immaculate", code: "P" },
+                { text: "Regular cleaning evident", code: "P" },
+                { text: "Dust/Dirt accumulation", code: "X" }
+            ],
+            "STANDARDIZE": [
+                { text: "Procedures followed 100%", code: "P" },
+                { text: "PM schedule updated", code: "P" },
+                { text: "Standard bypassed", code: "X" }
+            ],
+            "SUSTAIN": [
+                { text: "Culture fully embraced", code: "P" },
+                { text: "Unit head active support", code: "P" },
+                { text: "Self-discipline lacking", code: "X" }
+            ],
+            "SAFETY": [
+                { text: "Safety devices clear", code: "P" },
+                { text: "Exits fully unobstructed", code: "P" },
+                { text: "Safety hazard identified", code: "X" }
+            ],
+            "ENVIRONMENT": [
+                { text: "Energy conservation active", code: "P" },
+                { text: "Paperless workflow applied", code: "P" },
+                { text: "Wastage of utilities", code: "X" }
+            ]
+        };
+
+        const auditData = [
+            { 
+                category: "SORT ACTIVITY DESCRIPTIONS", 
+                key: "SORT", 
+                questions: [
+                    "Only necessary items/materials, etc. are present at the work area. Items not required are removed from the workplace or properly tagged.",
+                    "All broken or unnecessary chairs, shelves, lockers, workbenches, etc., not required is removed from the workplace.",
+                    "Obsolete documents are retrieved and sorted to prevent unintended use.",
+                    "Wastes are thrown in designated trashbins. [e.g. paper wastes are thrown in black bag, infectious wastes are thrown in yellow bag]",
+                    "Near expiry items are segregated."
+                ] 
+            },
+            { 
+                category: "SET IN ORDER ACTIVITY DESCRIPTIONS", 
+                key: "SET IN ORDER", 
+                questions: [
+                    "Supplies and supplies have designated storage location that is within reach. The location is properly labeled and supplies are easily identified.",
+                    "Furniture/Equipment is clearly identified (with asset tag).",
+                    "Work areas requiring personal protective equipment are clearly labeled.",
+                    "Switches and breakers are highly visible and located for easy access in case of emergency.",
+                    "Locations for containers, boxes, bins, materials, etc. is clearly defined by painted lines and properly labeled part number, quantity, etc."
+                ] 
+            },
+            { 
+                category: "SHINE ACTIVITY DESCRIPTIONS", 
+                key: "SHINE", 
+                questions: [
+                    "Equipment/Supplies are kept clean and in good working condition. Where possible, Equipment/supplies are stored in a manner to keep them clean and free from risk of damage.",
+                    "Files are kept clean and protected from dirt.",
+                    "Work surfaces [machines, workbenches and other equipment including electrical boxes] are clean and painted.",
+                    "Walls, partitions, railings, etc are kept clean.",
+                    "There is a schedule showing times, frequency and responsibilities to clean areas of the workplace such as windows, corners, walls, doors, top of cabinets, etc.",
+                    "All cleaning equipment/materials are stored and readily available when needed.",
+                    "All personal protective equipment is maintained in sanitary and reliable condition and is properly stored in an easy accessible and labeled location when not in use.",
+                    "Containers, boxes, bins, etc. are free from dents and stains. They are neatly stacked"
+                ] 
+            },
+            { 
+                category: "STANDARDIZE ACTIVITY DESCRIPTION", 
+                key: "STANDARDIZE", 
+                questions: [
+                    "Documents are labeled clearly as to contents and responsibility for control and revision. The date and revision number are clearly visible.",
+                    "Preventive maintenance/calibration plans are carried out as planned.",
+                    "The results of the previous audit are available when needed.",
+                    "Areas for improvement identified during the previous audit have been resolved/corrected.",
+                    "Work area lighting is appropriate.",
+                    "Work ventillation is appropriate.",
+                    "Disposal of records in accordance to retention period on the List of Quality Records [Disposal Method]",
+                    "Unit follows the requisition day schedule of Central Store and Purchasing Department.",
+                    "Unit follows First-in, First out policy or First to Expire, First Out as applicable.",
+                    "Supplies, equipment, files, ,etc. are stored in designated areas and are returned immediately after use."
+                ] 
+            },
+            { 
+                category: "SUSTAIN ACTIVITY DESCRIPTIONS", 
+                key: "SUSTAIN", 
+                questions: [
+                    "Unit/department heads are tasked to perform 5S Activities at least once/week. Resources are allocated to perform 5S activities. [e.g. designated daily/weekly/clean-up time, 5S team leader, etc.]",
+                    "The team took the initiative to make improvements to the workplace that were not identified during the last 5S audit.",
+                    "The unit has participated in a 5S activity. [e.g. attended Orientation on 5S Seminar]",
+                    "TDMH personnel wears their prescribed uniform and identification card.",
+                    "TDMH personnel follows the TDMH Standard Customer Responses-Telephone Communications."
+                ] 
+            },
+            { 
+                category: "SAFETY ACTIVITY DESCRIPTIONS", 
+                key: "SAFETY", 
+                questions: [
+                    "Fire extinguishers are visible",
+                    "Evacuation routes are prominently posted.",
+                    "Emergency exits are visible and in working condition",
+                    "Emergency phone numbers are prominently posted.",
+                    "All wires and cables are well organized and stowed.",
+                    "TDMH personnel have received appropriate safety training [e.g. Fire Drills, Earthquake]",
+                    "TDMH personnel understood and implement the TDMH Health and Safety Manual.",
+                    "TDMH personnel have received appropriate training on Infection Prevention and Control.",
+                    "Unit SPDPC Functional Chart prominently posted",
+                    "Fire extinguisher and other safety devices are in good working condition and in reach",
+                    "Disaster Preparedness Checklist (Safety Checklist) are prominently posted",
+                    "Presence of To Go Kit",
+                    "Employee can perform duck, cover and hold.",
+                    "The Unit has an updated TDMH Staff Demographic Data",
+                    "Disposal sharps container should be replaced when its 3/4 full."
+                ] 
+            },
+            { 
+                category: "SAVE THE ENVIRONMENT ACTIVITY DESCRIPTIONS", 
+                key: "ENVIRONMENT", 
+                questions: [
+                    "Airconditioning units are turned off during breaktime.",
+                    "Unnecessary lights are turned off during breaktime.",
+                    "Use of Softcopy as a source of file dissemination to reduce usage of paper.",
+                    "Maintenance of pipes and faucets are being monitored to prevent leaks and spills and to help conserve water."
+                ] 
+            }
+        ];
+
+        const auditHistory = [];
+
+        window.onload = () => {
+            renderAudit();
+            setupSignatures();
+            document.getElementById('auditDate').valueAsDate = new Date();
+        };
+
+        function renderAudit() {
+            const container = document.getElementById('audit-questions');
+            container.innerHTML = '';
+            let qCounter = 1;
+            
+            auditData.forEach((cat) => {
+                let html = `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="category-header bg-yellow-400/5 p-5 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">${cat.category}</h3>
+                        </div>
+                        <div class="divide-y divide-slate-50">
+                `;
+
+                cat.questions.forEach((q) => {
+                    const rowId = `q-row-${qCounter}`;
+                    html += `
+                        <div id="${rowId}" class="p-5 flex flex-col xl:flex-row gap-5 items-start xl:items-center hover:bg-slate-50/50 transition-colors">
+                            <div class="flex-1">
+                                <span class="text-[10px] font-black text-slate-300 mr-2">${qCounter++}</span>
+                                <span class="text-xs font-semibold text-slate-600 leading-relaxed">${q}</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 w-full xl:w-auto">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[8px] font-black text-slate-400 uppercase">Code</label>
+                                    <select data-q="${q}" onchange="calculateResults()" class="audit-input p-2 border border-slate-200 rounded-lg text-[10px] font-bold w-full bg-white shadow-sm focus:border-yellow-400 outline-none">
+                                        <option value="P">P (Compliant)</option>
+                                        <option value="X">X (Fail)</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col gap-1 md:col-span-2">
+                                    <label class="text-[8px] font-black text-slate-400 uppercase">Quick Remark</label>
+                                    <select class="remark-input p-2 border border-slate-200 rounded-lg text-[10px] font-medium w-full bg-white shadow-sm focus:border-yellow-400 outline-none">
+                                        <option value="">Select Remark...</option>
+                                        ${remarkOptions[cat.key].map(opt => `<option value="${opt.text}">${opt.text}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[8px] font-black text-slate-400 uppercase">Evidence</label>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="triggerUpload('${rowId}')" class="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
+                                            <i class="fa-solid fa-camera text-slate-400 text-xs"></i>
+                                        </button>
+                                        <input type="file" id="file-${rowId}" class="hidden" accept="image/*" onchange="previewImage(this, '${rowId}')">
+                                        <img id="img-${rowId}" class="img-preview" src="" alt="Preview">
+                                        <input type="hidden" class="photo-data">
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1 md:col-span-1">
+                                    <label class="text-[8px] font-black text-slate-400 uppercase">Notes</label>
+                                    <input type="text" class="notes-input p-2 border border-slate-200 rounded-lg text-[10px] w-full bg-white shadow-sm focus:border-yellow-400 outline-none" placeholder="Notes...">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+            calculateResults();
+        }
+
+        function triggerUpload(rowId) {
+            document.getElementById(`file-${rowId}`).click();
+        }
+
+        function previewImage(input, rowId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(`img-${rowId}`);
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    input.parentElement.querySelector('.photo-data').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function calculateResults() {
+            const inputs = document.querySelectorAll('.audit-input');
+            let totalPossible = 0; let totalCompliant = 0;
+            inputs.forEach(input => {
+                if (input.value !== "N/A") {
+                    totalPossible++;
+                    if (input.value === "P") totalCompliant++;
+                }
+            });
+            const percentage = totalPossible > 0 ? Math.round((totalCompliant / totalPossible) * 100) : 0;
+            document.getElementById('summary-score').innerText = `${percentage}%`;
+            
+            const levelEl = document.getElementById('level-text');
+            const badgeEl = document.getElementById('rating-badge');
+            
+            if (percentage >= 91) { levelEl.innerText = "DIAMOND"; badgeEl.className = "h-full flex flex-col justify-center items-center p-6 rounded-2xl border-2 border-cyan-400 bg-cyan-50 text-cyan-700"; }
+            else if (percentage >= 66) { levelEl.innerText = "PLATINUM"; badgeEl.className = "h-full flex flex-col justify-center items-center p-6 rounded-2xl border-2 border-slate-400 bg-slate-50 text-slate-700"; }
+            else if (percentage >= 51) { levelEl.innerText = "GOLD"; badgeEl.className = "h-full flex flex-col justify-center items-center p-6 rounded-2xl border-2 border-yellow-400 bg-yellow-50 text-yellow-700"; }
+            else { levelEl.innerText = "BELOW GOLD"; badgeEl.className = "h-full flex flex-col justify-center items-center p-6 rounded-2xl border-2 border-red-400 bg-red-50 text-red-700"; }
+        }
+
+        async function submitAudit() {
+            const unit = document.getElementById('unitName').value;
+            const auditor = document.getElementById('auditorName').value;
+            if (!unit || !auditor) return alert("Please fill in Unit and Auditor name.");
+            
+            const results = [];
+            const rows = document.querySelectorAll('.audit-input');
+            rows.forEach((row, i) => {
+                const rowEl = row.closest('[id^="q-row-"]');
+                results.push({
+                    question: row.getAttribute('data-q'),
+                    code: row.value,
+                    remark: document.querySelectorAll('.remark-input')[i].value,
+                    notes: document.querySelectorAll('.notes-input')[i].value,
+                    photo: rowEl.querySelector('.photo-data').value || ""
+                });
+            });
+
+            const payload = {
+                unit: unit,
+                auditor: auditor,
+                date: document.getElementById('auditDate').value,
+                score: document.getElementById('summary-score').innerText,
+                rating: document.getElementById('level-text').innerText,
+                results: results
+            };
+
+            auditHistory.unshift(payload);
+            updateHistory();
+
+            if (!scriptURL) {
+                alert("Audit saved locally!");
+                return;
+            }
+
+            const toast = document.getElementById('sync-toast');
+            toast.classList.add('show');
+
+            try {
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                document.getElementById('sync-message').innerText = "Sync Successful!";
+                document.getElementById('sync-spinner').classList.add('hidden');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            } catch (err) {
+                document.getElementById('sync-message').innerText = "Sync Error: Check Console";
+                console.error(err);
+                setTimeout(() => toast.classList.remove('show'), 5000);
+            }
+        }
+
+        function updateHistory() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = auditHistory.map(h => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-black uppercase text-slate-800">${h.unit}</p>
+                        <p class="text-[10px] font-bold text-slate-400">${h.date} by ${h.auditor}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-lg font-black text-slate-900">${h.score}</p>
+                        <p class="text-[9px] font-bold uppercase text-slate-500">${h.rating}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupSignatures() {
+            ['sign-auditor', 'sign-dept'].forEach(id => {
+                const canvas = document.getElementById(id);
+                const ctx = canvas.getContext('2d');
+                let drawing = false;
+                const pos = (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    return { x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left, y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top };
+                };
+                canvas.addEventListener('mousedown', () => drawing = true);
+                canvas.addEventListener('touchstart', (e) => { drawing = true; e.preventDefault(); });
+                window.addEventListener('mouseup', () => drawing = false);
+                window.addEventListener('touchend', () => drawing = false);
+                canvas.addEventListener('mousemove', (e) => {
+                    if (!drawing) return;
+                    const p = pos(e);
+                    ctx.lineTo(p.x, p.y); ctx.stroke();
+                });
+                const res = () => { canvas.width = canvas.parentElement.offsetWidth - 48; canvas.height = 160; };
+                window.addEventListener('resize', res); res();
+            });
+        }
+
+        function clearSign(id) {
+            const canvas = document.getElementById(id);
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            canvas.getContext('2d').beginPath();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+    </script>
+</body>
+</html>
