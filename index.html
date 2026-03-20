@@ -12,10 +12,16 @@
         .section-header { background: #facc15; color: black; font-weight: bold; padding: 0.75rem 1rem; border-bottom: 2px solid #eab308; }
         .audit-row:nth-child(even) { background-color: #fafafa; }
         .signature-pad { border: 2px dashed #ccc; border-radius: 4px; background: #fff; cursor: crosshair; touch-action: none; }
-        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .photo-btn { transition: all 0.2s; }
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; flex-direction: column; align-items: center; justify-content: center; color: white; }
         .photo-btn.has-photo { background-color: #10b981; color: white; border-color: #059669; }
-        @media (max-width: 640px) { .compliance-buttons { flex-direction: column; } }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            #reportModal { position: static; display: block !important; background: white; opacity: 1; overflow: visible !important; }
+            .modal-content { box-shadow: none !important; border: none !important; max-height: none !important; overflow: visible !important; width: 100% !important; margin: 0 !important; }
+            .print-item-break { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body class="p-2 md:p-8">
@@ -25,114 +31,115 @@
         <p class="text-xl font-semibold" id="loadingText">Processing...</p>
     </div>
 
+    <!-- Modal for Detailed View -->
+    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-2 md:p-4">
+        <div class="bg-white w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-xl shadow-2xl relative modal-content">
+            <div class="sticky top-0 bg-gray-100 p-4 border-b flex justify-between items-center no-print">
+                <h3 class="font-bold text-xl text-blue-900">Audit Detailed Report</h3>
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold text-sm shadow hover:bg-blue-700">Print Report</button>
+                    <button onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded font-bold text-sm shadow hover:bg-gray-500">Close</button>
+                </div>
+            </div>
+            <div id="modalContent" class="p-4 md:p-10 bg-white">
+                <!-- Detailed Data Injected Here -->
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-6">
+        <header class="text-center mb-6 no-print">
             <h1 class="text-2xl md:text-3xl font-bold text-blue-900">Taytay Doctors Multispecialty Hospital</h1>
             <h2 class="text-lg md:text-xl font-semibold mt-2 underline uppercase">5S + 3 AUDIT CHECKLIST</h2>
-            <p class="text-gray-500 text-sm mt-1">Form ID: QIQ-F-011</p>
+            <p class="text-gray-500 text-sm">Form ID: QIQ-F-011</p>
         </header>
 
-        <div class="flex border-b border-gray-300 mb-6 sticky top-0 bg-gray-100 z-10 pt-2">
+        <div class="flex border-b border-gray-300 mb-6 sticky top-0 bg-gray-100 z-10 pt-2 no-print">
             <button onclick="switchTab('audit-form')" id="tab-audit" class="flex-1 py-2 px-4 font-semibold border-b-2 border-yellow-500 text-yellow-700">Audit Form</button>
             <button onclick="switchTab('summary-view')" id="tab-summary" class="flex-1 py-2 px-4 font-semibold text-gray-500 hover:text-yellow-600">Summary Dashboard</button>
         </div>
 
-        <div id="audit-form">
-            <!-- Basic Info -->
+        <div id="audit-form" class="no-print">
             <div class="form-section p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">UNIT / DEPARTMENT NAME</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Unit / Department Name</label>
                     <input type="text" id="dept_name" class="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="Enter department name...">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">DATE OF AUDIT (Auto)</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Date of Audit</label>
                     <input type="date" id="audit_date" class="w-full border rounded px-3 py-2 text-sm bg-gray-50">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">TIME OF AUDIT (Auto)</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Time of Audit</label>
                     <input type="time" id="audit_time" class="w-full border rounded px-3 py-2 text-sm bg-gray-50">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">HEAD OF THE DEPARTMENT</label>
-                    <input type="text" id="dept_head" class="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="Full name of Dept. Head...">
+                    <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Head of the Department</label>
+                    <input type="text" id="dept_head" class="w-full border rounded px-3 py-2 text-sm" placeholder="Full name of Dept. Head...">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">AUDITORS TEAM LEADER</label>
-                    <input type="text" id="auditor_leader" class="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="Full name of Lead Auditor...">
+                    <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Auditors Team Leader</label>
+                    <input type="text" id="auditor_leader" class="w-full border rounded px-3 py-2 text-sm" placeholder="Full name of Lead Auditor...">
                 </div>
             </div>
 
             <div id="audit-questions"></div>
 
-            <!-- Additional Notes -->
             <div class="form-section p-4 md:p-6">
-                <div class="section-header -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-4 flex justify-between items-center">
-                    <span class="uppercase tracking-wide">Additional Information</span>
-                    <button onclick="autoGenerateObservations()" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] py-1 px-3 rounded flex items-center gap-1 shadow-sm transition-all">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        GENERATE DETAILED OBSERVATIONS
-                    </button>
+                <div class="section-header -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-4 flex justify-between items-center uppercase tracking-wide">
+                    <span>Additional Observations</span>
+                    <button onclick="autoGenerateObservations()" class="bg-blue-600 text-white text-[10px] py-1 px-3 rounded shadow hover:bg-blue-700 uppercase">Generate Findings</button>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Overall Audit Observations (Narrative Report)</label>
-                    <textarea id="additional_notes" rows="8" class="w-full border rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-400 outline-none leading-relaxed" placeholder="Click 'GENERATE' for a detailed finding report based on your audit..."></textarea>
-                </div>
+                <textarea id="additional_notes" rows="6" class="w-full border rounded px-3 py-2 text-sm mb-4 leading-relaxed outline-none focus:ring-1 focus:ring-blue-400" placeholder="Narrative report details..."></textarea>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">General Audit Photo (Header Evidence)</label>
-                    <input type="file" id="evidence_photo_main" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                    <label class="block text-sm font-semibold mb-1">Overall Audit Evidence Photo</label>
+                    <input type="file" id="evidence_photo_main" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
                     <img id="image_preview_main" class="hidden mt-4 max-h-48 rounded shadow-md mx-auto border">
                 </div>
             </div>
 
-            <!-- Signatures -->
             <div class="form-section p-4 md:p-6 mb-32">
-                <div class="section-header -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-4 text-center uppercase tracking-wide">Final Approval</div>
+                <div class="section-header -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-4 text-center">FINAL APPROVAL SIGNATURES</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="text-center">
                         <label class="block text-xs font-bold mb-2 uppercase">Head of Department</label>
-                        <canvas id="sig-canvas-head" class="signature-pad w-full h-40 mx-auto"></canvas>
-                        <button type="button" onclick="clearSignature('head')" class="mt-2 text-xs text-red-600 font-bold uppercase hover:bg-red-50 px-2 py-1 rounded">Clear</button>
+                        <canvas id="sig-canvas-head" class="signature-pad w-full h-32 mx-auto"></canvas>
+                        <button type="button" onclick="clearSignature('head')" class="mt-2 text-[10px] text-red-600 font-bold uppercase">Clear</button>
                     </div>
                     <div class="text-center">
-                        <label class="block text-xs font-bold mb-2 uppercase">Auditors Team Leader</label>
-                        <canvas id="sig-canvas-auditor" class="signature-pad w-full h-40 mx-auto"></canvas>
-                        <button type="button" onclick="clearSignature('auditor')" class="mt-2 text-xs text-red-600 font-bold uppercase hover:bg-red-50 px-2 py-1 rounded">Clear</button>
+                        <label class="block text-xs font-bold mb-2 uppercase">Lead Auditor</label>
+                        <canvas id="sig-canvas-auditor" class="signature-pad w-full h-32 mx-auto"></canvas>
+                        <button type="button" onclick="clearSignature('auditor')" class="mt-2 text-[10px] text-red-600 font-bold uppercase">Clear</button>
                     </div>
                 </div>
             </div>
 
             <!-- Sticky Summary -->
-            <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl z-20 flex flex-wrap items-center justify-around gap-2 md:gap-4 border-t-4 border-yellow-400">
-                <div class="flex gap-4 items-center">
-                    <div class="text-center">
-                        <p class="text-[10px] font-bold uppercase text-gray-500">Compliance</p>
-                        <p id="total_percentage" class="text-2xl font-black text-blue-900">0%</p>
-                    </div>
-                    <div class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-bold text-xs border border-yellow-200 uppercase" id="legend_badge">
-                        Below Gold
-                    </div>
+            <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-2xl z-20 flex items-center justify-around border-t-4 border-yellow-400">
+                <div class="text-center">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase">Compliance</p>
+                    <p id="total_percentage" class="text-2xl font-black text-blue-900">0%</p>
                 </div>
-                <button onclick="submitAudit()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center gap-2 text-sm md:text-base">
-                    Submit Audit Report
-                </button>
+                <div class="px-3 py-1 rounded-full font-bold text-xs border" id="legend_badge">Below Gold</div>
+                <button onclick="submitAudit()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg text-sm transition-all active:scale-95">Submit Audit Report</button>
             </div>
         </div>
 
-        <div id="summary-view" class="hidden">
+        <div id="summary-view" class="hidden no-print">
             <div class="form-section p-4 md:p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold">Audit Dashboard</h3>
-                    <button onclick="loadSummary()" class="bg-yellow-500 text-white px-4 py-2 rounded font-bold text-sm">Sync Cloud</button>
+                    <h3 class="text-xl font-bold">Cloud Audit Records</h3>
+                    <button onclick="loadSummary()" class="bg-yellow-500 text-white px-4 py-2 rounded font-bold text-sm shadow hover:bg-yellow-600">Sync Cloud</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="bg-gray-100 border-b">
-                                <th class="p-3 font-bold">Timestamp</th>
+                            <tr class="bg-gray-100 border-b text-gray-700 uppercase text-[10px] tracking-wider">
+                                <th class="p-3 font-bold">Audit Date</th>
                                 <th class="p-3 font-bold">Department</th>
-                                <th class="p-3 font-bold text-center">Score %</th>
-                                <th class="p-3 font-bold text-center">Level</th>
-                                <th class="p-3 font-bold">Auditor</th>
+                                <th class="p-3 font-bold text-center">Score</th>
+                                <th class="p-3 font-bold text-center">Rating</th>
+                                <th class="p-3 font-bold text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody id="summary-table-body"></tbody>
@@ -146,100 +153,13 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxS9IrYf5sJ4yHC8WnC_zS8C9dIM77cEKRpmTckDgfW0xoeJhfM2IStRWdCYzq0v9zFsQ/exec";
         
         const SECTIONS = [
-            {
-                title: "SORT ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Unnecessary items present", "Broken furniture found", "Obsolete docs not sorted", "Waste mixed (Black/Yellow)", "Expired items found"],
-                items: [
-                    "1) Only necessary items/materials, etc. are present at the work area. Items not required are removed from the workplace or properly tagged.",
-                    "2) All broken or unnecessary chairs, shelves, lockers, workbenches, etc., not required is removed from the workplace.",
-                    "3) Obsolete documents are retrieved and sorted to prevent unintended use.",
-                    "4) Wastes are thrown in designated trashbins. [e.g. paper wastes are thrown in black bag, infectious wastes are thrown in yellow bag]",
-                    "5) Near expiry items are segregated."
-                ]
-            },
-            {
-                title: "SET IN ORDER ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Out of reach", "No asset tag", "PPE label missing", "Breakers blocked", "Lines faded/missing", "Messy storage"],
-                items: [
-                    "6) Supplies and supplies have designated storage location that is within reach. The location is properly labeled and supplies are easily identified.",
-                    "7) Furniture/Equipment is clearly identified (with asset tag).",
-                    "8) Work areas requiring personal protective equipment are clearly labeled.",
-                    "9) Switches and breakers are highly visible and located for easy access in case of emergency.",
-                    "10) Locations for containers, boxes, bins, materials, etc. is clearly defined by painted lines and properly labeled part number, quantity, etc."
-                ]
-            },
-            {
-                title: "SHINE ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Dust/Dirt found", "Surfaces unpainted", "Schedule missing", "PPE unsanitary", "Not stacked neatly"],
-                items: [
-                    "11) Equipment/Supplies are kept clean and in good working condition. Where possible, Equipment/supplies are stored in a manner to keep them clean and free from risk of damage.",
-                    "12) Files are kept clean and protected from dirt.",
-                    "13) Work surfaces [machines, workbenches and other equipment including electrical boxes] are clean and painted.",
-                    "14) Walls, partitions, railings, etc are kept clean.",
-                    "16) There is a schedule showing times, frequency and responsibilities to clean areas of the workplace such as windows, corners, walls, doors, top of cabinets, etc.",
-                    "17) All cleaning equipment/materials are stored and readily available when needed.",
-                    "18) All personal protective equipment is maintained in sanitary and reliable condition and is properly stored in an easy accessible and labeled location when not in use.",
-                    "19) Containers, boxes, bins, etc. are free from dents and stains. They are neatly stacked"
-                ]
-            },
-            {
-                title: "STANDARDIZE ACTIVITY DESCRIPTION",
-                remarks: ["Compliant", "No revision date", "PM not updated", "Prev. issues open", "Poor light/vent", "FIFO/FEFO violation", "Wrong disposal method"],
-                items: [
-                    "20) Documents are labeled clearly as to contents and responsibility for control and revision. The date and revision number are clearly visible.",
-                    "21) Preventive maintenance/calibration plans are carried out as planned.",
-                    "22) The results of the previous audit are available when needed.",
-                    "23) Areas for improvement identified during the previous audit have been resolved/corrected.",
-                    "24) Work area lighting is appropriate.",
-                    "25) Work ventillation is appropriate.",
-                    "26) Disposal of records in accordance to retention period on the List of Quality Records [Disposal Method]",
-                    "27) Unit follows the requisition day schedule of Central Store and Purchasing Department.",
-                    "28) Unit follows First-in, First out policy or First to Expire, First Out as applicable.",
-                    "29) Supplies, equipment, files, ,etc. are stored in designated areas and are returned immediately after use."
-                ]
-            },
-            {
-                title: "SUSTAIN ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Weekly check skipped", "No improvements", "No seminar/training", "Uniform/ID violation", "Phone etiquette poor"],
-                items: [
-                    "30) Unit/department heads are tasked to perform 5S Activities at least once/week. Resources are allocated to perform 5S activities. [e.g. designated daily/weekly/clean-up time, 5S team leader, etc.]",
-                    "31) The team took the initiative to make improvements to the workplace that were not identified during the last 5S audit.",
-                    "32) The unit has participated in a 5S activity. [e.g. attended Orientation on 5S Seminar]",
-                    "33) TDMH personnel wears their prescribed uniform and identification card.",
-                    "34) TDMH personnel follows the TDMH Standard Customer Responses-Telephone Communications."
-                ]
-            },
-            {
-                title: "SAFETY ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "Fire ext blocked", "Route not posted", "Wires messy", "Sharps >3/4 full", "Drill failed", "Chart missing"],
-                items: [
-                    "35) Fire extinguishers are visible",
-                    "36) Evacuation routes are prominently posted.",
-                    "37) Emergency exits are visible and in working condition",
-                    "38) Emergency phone numbers are prominently posted.",
-                    "39) All wires and cables are well organized and stowed.",
-                    "40) TDMH personnel have received appropriate safety training [e.g. Fire Drills, Earthquake]",
-                    "41) TDMH personnel understood and implement the TDMH Health and Safety Manual.",
-                    "42) TDMH personnel have received appropriate training on Infection Prevention and Control.",
-                    "43) Unit SPDPC Functional Chart prominently posted",
-                    "44) Fire extinguisher and other safety devices are in good working condition and in reach",
-                    "45) Disaster Preparedness Checklist (Safety Checklist) are prominently posted",
-                    "46) Presence of To Go Kit",
-                    "47) Employee can perform duck, cover and hold.",
-                    "48) The Unit has an updated TDMH Staff Demographic Data",
-                    "49) Disposal sharps container should be replaced when its 3/4 full."
-                ]
-            },
-            {
-                title: "SAVE THE ENVIRONMENT ACTIVITY DESCRIPTIONS",
-                remarks: ["Compliant", "AC on during break", "Lights on during break", "Paper waste high", "Leaking pipes/faucets"],
-                items: [
-                    "50) Airconditioning units are turned off during breaktime.",
-                    "51) Unnecessary lights are turned off during breaktime.",
-                    "52) Use of Softcopy as a source of file dissemination to reduce usage of paper.",
-                    "53) Maintenance of pipes and faucets are being monitored to prevent leaks and spills and to help conserve water."
-                ]
-            }
+            { title: "SORT ACTIVITY", remarks: ["Compliant", "Unnecessary items present", "Broken furniture found", "Obsolete docs not sorted", "Waste mixed", "Expired items"], items: ["1) Only necessary items/materials, etc. are present at the work area. Items not required are removed from the workplace or properly tagged.", "2) All broken or unnecessary chairs, shelves, lockers, workbenches, etc., not required is removed from the workplace.", "3) Obsolete documents are retrieved and sorted to prevent unintended use.", "4) Wastes are thrown in designated trashbins. [e.g. paper wastes are thrown in black bag, infectious wastes are thrown in yellow bag]", "5) Near expiry items are segregated."] },
+            { title: "SET IN ORDER", remarks: ["Compliant", "Out of reach", "No asset tag", "PPE label missing", "Breakers blocked", "Messy storage"], items: ["6) Supplies and supplies have designated storage location that is within reach. The location is properly labeled and supplies are easily identified.", "7) Furniture/Equipment is clearly identified (with asset tag).", "8) Work areas requiring personal protective equipment are clearly labeled.", "9) Switches and breakers are highly visible and located for easy access in case of emergency.", "10) Locations for containers, boxes, bins, materials, etc. is clearly defined by painted lines and properly labeled part number, quantity, etc."] },
+            { title: "SHINE ACTIVITY", remarks: ["Compliant", "Dust/Dirt found", "Schedule missing", "PPE unsanitary", "Not stacked neatly"], items: ["11) Equipment/Supplies are kept clean and in good working condition. Where possible, Equipment/supplies are stored in a manner to keep them clean and free from risk of damage.", "12) Files are kept clean and protected from dirt.", "13) Work surfaces [machines, workbenches and other equipment including electrical boxes] are clean and painted.", "14) Walls, partitions, railings, etc are kept clean.", "16) There is a schedule showing times, frequency and responsibilities to clean areas of the workplace such as windows, corners, walls, doors, top of cabinets, etc.", "17) All cleaning equipment/materials are stored and readily available when needed.", "18) All personal protective equipment is maintained in sanitary and reliable condition and is properly stored in an easy accessible and labeled location when not in use.", "19) Containers, boxes, bins, etc. are free from dents and stains. They are neatly stacked"] },
+            { title: "STANDARDIZE", remarks: ["Compliant", "No revision date", "PM not updated", "FIFO violation", "Wrong disposal"], items: ["20) Documents are labeled clearly as to contents and responsibility for control and revision. The date and revision number are clearly visible.", "21) Preventive maintenance/calibration plans are carried out as planned.", "22) The results of the previous audit are available when needed.", "23) Areas for improvement identified during the previous audit have been resolved/corrected.", "24) Work area lighting is appropriate.", "25) Work ventillation is appropriate.", "26) Disposal of records in accordance to retention period on the List of Quality Records [Disposal Method]", "27) Unit follows the requisition day schedule of Central Store and Purchasing Department.", "28) Unit follows First-in, First out policy or First to Expire, First Out as applicable.", "29) Supplies, equipment, files, ,etc. are stored in designated areas and are returned immediately after use."] },
+            { title: "SUSTAIN", remarks: ["Compliant", "Weekly check skipped", "No seminar", "Uniform violation", "Phone etiquette poor"], items: ["30) Unit/department heads are tasked to perform 5S Activities at least once/week. Resources are allocated to perform 5S activities. [e.g. designated daily/weekly/clean-up time, 5S team leader, etc.]", "31) The team took the initiative to make improvements to the workplace that were not identified during the last 5S audit.", "32) The unit has participated in a 5S activity. [e.g. attended Orientation on 5S Seminar]", "33) TDMH personnel wears their prescribed uniform and identification card.", "34) TDMH personnel follows the TDMH Standard Customer Responses-Telephone Communications."] },
+            { title: "SAFETY", remarks: ["Compliant", "Fire ext blocked", "Route not posted", "Wires messy", "Sharps >3/4 full", "Drill failed"], items: ["35) Fire extinguishers are visible", "36) Evacuation routes are prominently posted.", "37) Emergency exits are visible and in working condition", "38) Emergency phone numbers are prominently posted.", "39) All wires and cables are well organized and stowed.", "40) TDMH personnel have received appropriate safety training [e.g. Fire Drills, Earthquake]", "41) TDMH personnel understood and implement the TDMH Health and Safety Manual.", "42) TDMH personnel have received appropriate training on Infection Prevention and Control.", "43) Unit SPDPC Functional Chart prominently posted", "44) Fire extinguisher and other safety devices are in good working condition and in reach", "45) Disaster Preparedness Checklist (Safety Checklist) are prominently posted", "46) Presence of To Go Kit", "47) Employee can perform duck, cover and hold.", "48) The Unit has an updated TDMH Staff Demographic Data", "49) Disposal sharps container should be replaced when its 3/4 full."] },
+            { title: "SAVE ENVIRONMENT", remarks: ["Compliant", "AC on break", "Lights on break", "Paper waste high", "Leaking pipes"], items: ["50) Airconditioning units are turned off during breaktime.", "51) Unnecessary lights are turned off during breaktime.", "52) Use of Softcopy as a source of file dissemination to reduce usage of paper.", "53) Maintenance of pipes and faucets are being monitored to prevent leaks and spills and to help conserve water."] }
         ];
 
         let auditData = {};
@@ -248,8 +168,6 @@
             renderAuditForm();
             initSignaturePads();
             automateDateTime();
-            
-            // Header Image Preview
             document.getElementById('evidence_photo_main').addEventListener('change', function() {
                 const reader = new FileReader();
                 reader.onload = e => { 
@@ -260,10 +178,33 @@
             });
         };
 
+        function parseCleanDate(d) {
+            if (!d) return "N/A";
+            if (typeof d === 'string' && d.includes('T')) return d.split('T')[0];
+            return d;
+        }
+
+        function parseCleanTime(t) {
+            if (!t) return "N/A";
+            if (typeof t === 'string' && t.includes('T')) {
+                const timePart = t.split('T')[1];
+                return timePart.substring(0, 5);
+            }
+            return t.toString().substring(0, 5);
+        }
+
         function automateDateTime() {
             const now = new Date();
-            document.getElementById('audit_date').value = now.toISOString().split('T')[0];
-            document.getElementById('audit_time').value = now.toTimeString().slice(0, 5);
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const localDate = `${year}-${month}-${day}`;
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const localTime = `${hours}:${minutes}`;
+
+            document.getElementById('audit_date').value = localDate;
+            document.getElementById('audit_time').value = localTime;
         }
 
         function renderAuditForm() {
@@ -271,47 +212,33 @@
             SECTIONS.forEach((section) => {
                 const sectionEl = document.createElement('div');
                 sectionEl.className = 'form-section';
-                let html = `<div class="section-header uppercase text-sm tracking-wider">${section.title}</div><div class="p-1">`;
-                
+                let html = `<div class="section-header uppercase text-sm">${section.title}</div><div class="p-1">`;
                 section.items.forEach((text) => {
                     const id = text.split(')')[0].trim();
                     auditData[id] = { code: 'N/A', compliance: 0, remarks: '', photo: '', questionText: text };
-                    
                     html += `
                         <div class="audit-row p-4 border-b last:border-b-0">
                             <div class="flex flex-col md:flex-row gap-4 items-start">
                                 <div class="flex-grow">
-                                    <p class="text-sm font-medium text-gray-800 leading-relaxed">${text}</p>
+                                    <p class="text-sm font-medium text-gray-800 leading-tight">${text}</p>
                                     <div class="mt-2 flex gap-1 flex-wrap">
-                                        ${section.remarks.map(rem => `
-                                            <button onclick="setRemark('${id}', '${rem}')" class="text-[9px] font-bold bg-white hover:bg-yellow-100 px-2 py-1 rounded text-gray-600 transition-colors border border-gray-300">+ ${rem}</button>
-                                        `).join('')}
+                                        ${section.remarks.map(rem => `<button onclick="setRemark('${id}', '${rem}')" class="text-[9px] font-bold bg-white px-2 py-1 rounded border border-gray-300 transition hover:bg-yellow-50">+ ${rem}</button>`).join('')}
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-2 w-full md:w-auto md:min-w-[280px]">
-                                    <div class="flex gap-1 compliance-buttons">
-                                        <button onclick="updateCompliance('${id}', 'P')" id="btn-${id}-P" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">P (Compliant)</button>
-                                        <button onclick="updateCompliance('${id}', 'x')" id="btn-${id}-x" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-white">x (Non-Compliant)</button>
-                                        <button onclick="updateCompliance('${id}', 'N/A')" id="btn-${id}-N/A" class="flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-100 border-gray-300">N/A (Not Applicable)</button>
-                                        
-                                        <!-- Photo Input for this specific item -->
-                                        <div class="relative">
-                                            <input type="file" id="photo-${id}" accept="image/*" class="hidden" onchange="handleItemPhoto('${id}', this)">
-                                            <button id="photo-btn-${id}" onclick="document.getElementById('photo-${id}').click()" 
-                                                class="photo-btn flex items-center justify-center py-2 px-3 rounded border border-gray-300 bg-white hover:bg-gray-50">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                            </button>
-                                        </div>
+                                    <div class="flex gap-1">
+                                        <button onclick="updateCompliance('${id}', 'P')" id="btn-${id}-P" class="flex-1 py-2 rounded border text-[10px] font-bold bg-white transition-all">P (Compliant)</button>
+                                        <button onclick="updateCompliance('${id}', 'x')" id="btn-${id}-x" class="flex-1 py-2 rounded border text-[10px] font-bold bg-white transition-all">x (Non-Compliant)</button>
+                                        <button onclick="updateCompliance('${id}', 'N/A')" id="btn-${id}-N/A" class="flex-1 py-2 rounded border text-[10px] font-bold bg-gray-100 transition-all">N/A</button>
+                                        <button id="photo-btn-${id}" onclick="document.getElementById('photo-${id}').click()" class="flex items-center justify-center p-2 rounded border bg-white transition hover:bg-gray-50">
+                                            <input type="file" id="photo-${id}" accept="image/*" class="hidden" onchange="handleItemPhoto('${id}', this)">📷
+                                        </button>
                                     </div>
-                                    <input type="text" id="rem-${id}" oninput="auditData['${id}'].remarks = this.value" 
-                                        class="w-full border rounded px-2 py-2 text-xs focus:ring-1 focus:ring-yellow-400 outline-none" placeholder="Add specific finding...">
-                                    <div id="preview-container-${id}" class="hidden flex justify-center mt-1">
-                                        <img id="preview-${id}" class="h-16 rounded shadow-sm border">
-                                    </div>
+                                    <input type="text" id="rem-${id}" oninput="auditData['${id}'].remarks = this.value" class="w-full border rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-yellow-400" placeholder="Add remark...">
+                                    <div id="preview-container-${id}" class="hidden flex justify-center mt-1"><img id="preview-${id}" class="h-10 rounded shadow-sm border"></div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
                 html += `</div>`;
                 sectionEl.innerHTML = html;
@@ -320,21 +247,15 @@
         }
 
         function handleItemPhoto(id, input) {
-            const file = input.files[0];
-            const btn = document.getElementById(`photo-btn-${id}`);
-            const preview = document.getElementById(`preview-${id}`);
-            const container = document.getElementById(`preview-container-${id}`);
-
-            if (file) {
+            if (input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = e => {
-                    auditData[id].photo = e.target.result; // Store Base64
-                    preview.src = e.target.result;
-                    container.classList.remove('hidden');
-                    btn.classList.add('has-photo');
-                    btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-                }
-                reader.readAsDataURL(file);
+                    auditData[id].photo = e.target.result;
+                    document.getElementById(`preview-${id}`).src = e.target.result;
+                    document.getElementById(`preview-container-${id}`).classList.remove('hidden');
+                    document.getElementById(`photo-btn-${id}`).classList.add('has-photo');
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
@@ -343,74 +264,38 @@
             auditData[id].compliance = code === 'P' ? 1 : 0;
             ['P', 'x', 'N/A'].forEach(c => {
                 const btn = document.getElementById(`btn-${id}-${c}`);
-                if (btn) btn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold " + (c === 'N/A' ? "bg-gray-100 border-gray-300" : "bg-white");
+                btn.className = "flex-1 py-2 rounded border text-[10px] font-bold " + (c === code ? (c === 'P' ? "bg-green-600 text-white border-green-700 shadow-inner" : c === 'x' ? "bg-red-600 text-white border-red-700 shadow-inner" : "bg-gray-500 text-white border-gray-600 shadow-inner") : "bg-white");
             });
-            const activeBtn = document.getElementById(`btn-${id}-${code}`);
-            if(activeBtn) {
-                if(code === 'P') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-green-600 text-white border-green-700 shadow-inner";
-                if(code === 'x') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-red-600 text-white border-red-700 shadow-inner";
-                if(code === 'N/A') activeBtn.className = "flex-1 py-2 px-1 rounded border text-[10px] font-bold bg-gray-500 text-white border-gray-600 shadow-inner";
-            }
             calculateScores();
         }
 
         function setRemark(id, text) {
-            const input = document.getElementById(`rem-${id}`);
-            input.value = text;
+            document.getElementById(`rem-${id}`).value = text;
             auditData[id].remarks = text;
         }
 
         function calculateScores() {
-            let totalApplicable = 0, totalCompliant = 0;
-            Object.values(auditData).forEach(item => {
-                if (item.code !== 'N/A') { totalApplicable++; if (item.code === 'P') totalCompliant++; }
-            });
-            const pct = totalApplicable === 0 ? 0 : Math.round((totalCompliant / totalApplicable) * 100);
+            let totalApp = 0, compliant = 0;
+            Object.values(auditData).forEach(i => { if(i.code !== 'N/A') { totalApp++; if(i.code === 'P') compliant++; } });
+            const pct = totalApp === 0 ? 0 : Math.round((compliant / totalApp) * 100);
             document.getElementById('total_percentage').innerText = pct + "%";
             const b = document.getElementById('legend_badge');
-            let r = "Below Gold"; b.className = "px-3 py-1 rounded-full font-bold text-xs border ";
-            if (pct >= 91) { r = "Diamond"; b.classList.add("bg-blue-600", "text-white"); }
-            else if (pct >= 81) { r = "Platinum"; b.classList.add("bg-purple-600", "text-white"); }
-            else if (pct >= 51) { r = "Gold"; b.classList.add("bg-yellow-400", "text-black"); }
-            else { r = "Below Gold"; b.classList.add("bg-gray-200", "text-gray-800"); }
-            b.innerText = r;
+            b.className = "px-3 py-1 rounded-full font-bold text-xs border " + (pct >= 91 ? "bg-blue-600 text-white border-blue-700" : pct >= 81 ? "bg-purple-600 text-white border-purple-700" : pct >= 51 ? "bg-yellow-400 text-black border-yellow-500" : "bg-gray-200 text-gray-800 border-gray-300");
+            b.innerText = pct >= 91 ? "Diamond" : pct >= 81 ? "Platinum" : pct >= 51 ? "Gold" : "Below Gold";
         }
 
         function autoGenerateObservations() {
-            let findings = [];
+            let dept = document.getElementById('dept_name').value || "THE UNIT";
             let score = document.getElementById('total_percentage').innerText;
             let rating = document.getElementById('legend_badge').innerText;
-            let dept = document.getElementById('dept_name').value || "the unit";
-
-            Object.keys(auditData).forEach(id => {
-                if (auditData[id].code === 'x') {
-                    // Extract question text without the leading ID number
-                    let question = auditData[id].questionText;
-                    let remark = auditData[id].remarks ? ` Findings: ${auditData[id].remarks}` : " Findings: Requirement not met.";
-                    findings.push(`• [${id}] ${question}\n  ${remark}`);
-                }
-            });
-
-            let summary = `5S + 3 AUDIT OBSERVATION REPORT\n`;
-            summary += `==================================================\n`;
-            summary += `DEPARTMENT: ${dept.toUpperCase()}\n`;
-            summary += `FINAL COMPLIANCE SCORE: ${score}\n`;
-            summary += `RATING LEVEL: ${rating}\n`;
-            summary += `==================================================\n\n`;
-
-            if (findings.length > 0) {
-                summary += `THE FOLLOWING NON-COMPLIANT AREAS WERE IDENTIFIED:\n\n`;
-                findings.forEach(f => summary += `${f}\n\n`);
-                summary += `RECOMMENDATIONS & CORRECTIVE ACTIONS:\n`;
-                summary += `1. Immediate rectification is required for all non-compliant requirements identified above.\n`;
-                summary += `2. Department heads must verify corrections and conduct a short follow-up briefing with unit staff.\n`;
-                summary += `3. Sustained effort is encouraged to maintain hospital-wide safety and organization standards.`;
+            let notes = `5S + 3 AUDIT OBSERVATION REPORT\nUNIT: ${dept.toUpperCase()}\nSCORE: ${score} (${rating})\n\nNON-COMPLIANT FINDINGS:\n`;
+            let fails = Object.keys(auditData).filter(id => auditData[id].code === 'x');
+            if (fails.length > 0) {
+                fails.forEach(id => notes += `• [${id}] ${auditData[id].questionText}: ${auditData[id].remarks || 'Action required.'}\n`);
             } else {
-                summary += `EXCELLENT ADHERENCE OBSERVED:\n\n`;
-                summary += `No non-compliant items were identified during this audit cycle. The department demonstrates full compliance with TDMH 5S+3 workplace organization and safety protocols. All areas inspected were found to be in optimal condition.`;
+                notes += "All items are in full compliance with TDMH standards. Workplace is well-organized and safe.";
             }
-
-            document.getElementById('additional_notes').value = summary;
+            document.getElementById('additional_notes').value = notes;
         }
 
         let sigPads = {};
@@ -419,59 +304,50 @@
                 const c = document.getElementById(`sig-canvas-${t}`);
                 const ctx = c.getContext('2d');
                 let d = false;
+                const ratio = window.devicePixelRatio || 1;
+                c.width = c.offsetWidth * ratio; c.height = c.offsetHeight * ratio; ctx.scale(ratio, ratio);
                 const getP = (e) => {
                     const r = c.getBoundingClientRect();
                     const cx = e.touches ? e.touches[0].clientX : e.clientX;
                     const cy = e.touches ? e.touches[0].clientY : e.clientY;
                     return { x: cx - r.left, y: cy - r.top };
                 };
-                c.addEventListener('mousedown', e => { d = true; const {x,y} = getP(e); ctx.beginPath(); ctx.moveTo(x, y); });
-                c.addEventListener('mousemove', e => { if(!d) return; const {x,y} = getP(e); ctx.lineTo(x, y); ctx.stroke(); });
+                c.addEventListener('mousedown', e => { d = true; ctx.beginPath(); ctx.moveTo(getP(e).x, getP(e).y); });
+                c.addEventListener('mousemove', e => { if(!d) return; ctx.lineTo(getP(e).x, getP(e).y); ctx.stroke(); });
                 window.addEventListener('mouseup', () => d = false);
-                c.addEventListener('touchstart', e => { d = true; const {x,y} = getP(e); ctx.beginPath(); ctx.moveTo(x, y); });
-                c.addEventListener('touchmove', e => { if(!d) return; const {x,y} = getP(e); ctx.lineTo(x, y); ctx.stroke(); e.preventDefault(); });
+                c.addEventListener('touchstart', e => { d = true; ctx.beginPath(); ctx.moveTo(getP(e).x, getP(e).y); });
+                c.addEventListener('touchmove', e => { if(!d) return; ctx.lineTo(getP(e).x, getP(e).y); ctx.stroke(); e.preventDefault(); }, {passive: false});
                 c.addEventListener('touchend', () => d = false);
                 ctx.lineWidth = 2; ctx.strokeStyle = '#000';
-                const ratio = window.devicePixelRatio || 1;
-                c.width = c.offsetWidth * ratio; c.height = c.offsetHeight * ratio; ctx.scale(ratio, ratio);
                 sigPads[t] = c;
             });
         }
 
-        function clearSignature(t) {
-            const ctx = sigPads[t].getContext('2d');
-            ctx.clearRect(0, 0, sigPads[t].width, sigPads[t].height);
-        }
+        function clearSignature(t) { const ctx = sigPads[t].getContext('2d'); ctx.clearRect(0, 0, sigPads[t].width, sigPads[t].height); }
 
         async function submitAudit() {
             const dept = document.getElementById('dept_name').value;
-            const head = document.getElementById('dept_head').value;
-            const lead = document.getElementById('auditor_leader').value;
-            if (!dept || !head || !lead) { alert("Fill in Department, Head, and Auditor details."); return; }
-            
+            if(!dept) { alert("Please enter Department Name before submitting."); return; }
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('loadingText').innerText = "Uploading Full Report...";
-            
             try {
                 const payload = {
                     metadata: {
                         department: dept, date: document.getElementById('audit_date').value,
-                        time: document.getElementById('audit_time').value, head: head, auditor: lead,
-                        score: document.getElementById('total_percentage').innerText,
-                        rating: document.getElementById('legend_badge').innerText,
-                        notes: document.getElementById('additional_notes').value
+                        time: document.getElementById('audit_time').value, head: document.getElementById('dept_head').value,
+                        auditor: document.getElementById('auditor_leader').value, score: document.getElementById('total_percentage').innerText,
+                        rating: document.getElementById('legend_badge').innerText, notes: document.getElementById('additional_notes').value
                     },
-                    items: auditData, // This contains the specific 1-53 photos
+                    items: auditData,
                     signatures: { head: sigPads.head.toDataURL(), auditor: sigPads.auditor.toDataURL() },
                     evidence_main: document.getElementById('image_preview_main').src || ""
                 };
-                
                 await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                document.getElementById('loadingText').innerText = "Sync Successful!";
-                setTimeout(() => { location.reload(); }, 1500);
-            } catch (error) {
-                alert("Upload failed.");
-                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loadingText').innerText = "Submit Successful!";
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) { 
+                alert("Critical Sync Error. Please check your internet connection."); 
+                document.getElementById('loading').style.display = 'none'; 
             }
         }
 
@@ -483,20 +359,104 @@
 
         async function loadSummary() {
             const body = document.getElementById('summary-table-body');
-            body.innerHTML = `<tr><td colspan="5" class="p-8 text-center animate-pulse">Syncing...</td></tr>`;
+            body.innerHTML = '<tr><td colspan="5" class="p-8 text-center animate-pulse text-gray-500">Retrieving Cloud Data...</td></tr>';
             try {
                 const res = await fetch(API_URL + "?action=getSummary");
                 const data = await res.json();
+                if (!data || data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">No records found.</td></tr>';
+                    return;
+                }
                 body.innerHTML = data.map(r => `
-                    <tr class="border-b hover:bg-yellow-50">
-                        <td class="p-3">${r.date} ${r.time || ''}</td>
-                        <td class="p-3 font-bold text-blue-900">${r.department}</td>
-                        <td class="p-3 text-center">${r.score}</td>
-                        <td class="p-3 text-center font-bold">${r.rating}</td>
-                        <td class="p-3">${r.auditor}</td>
-                    </tr>
-                `).join('');
-            } catch (err) { body.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Sync Error.</td></tr>`; }
+                    <tr class="border-b hover:bg-yellow-50 transition-colors">
+                        <td class="p-3 font-medium text-gray-600">${parseCleanDate(r.date)} ${parseCleanTime(r.time)}</td>
+                        <td class="p-3 font-bold text-blue-900 uppercase">${r.department}</td>
+                        <td class="p-3 text-center font-bold">${r.score}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-yellow-400 bg-yellow-50 text-yellow-800">${r.rating}</span></td>
+                        <td class="p-3 text-center"><button onclick="viewReport(${r.id})" class="bg-blue-600 text-white px-4 py-1 rounded text-xs font-bold shadow hover:bg-blue-700 transition active:scale-95">VIEW</button></td>
+                    </tr>`).join('');
+            } catch (e) { body.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Cloud Error. Check your Web App URL.</td></tr>'; }
+        }
+
+        async function viewReport(id) {
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loadingText').innerText = "Loading Audit Report...";
+            try {
+                const res = await fetch(API_URL + "?action=getDetailed&id=" + id);
+                const data = await res.json();
+                const m = data.metadata;
+                
+                let html = `
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-bold text-blue-900">Taytay Doctors Multispecialty Hospital</h1>
+                        <h2 class="text-xl font-bold underline uppercase">5S + 3 AUDIT FULL REPORT</h2>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Form: QIQ-F-011 | Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Unit / Department</p><p class="font-bold text-lg text-blue-900 uppercase">${m.department}</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Audit Schedule</p><p class="font-bold text-lg">${parseCleanDate(m.date)} | ${parseCleanTime(m.time)}</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Compliance Score</p><p class="font-bold text-2xl text-blue-900">${m.score} <span class="text-sm font-normal text-gray-600">(${m.rating})</span></p></div>
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Lead Auditor</p><p class="font-bold text-lg uppercase">${m.auditor}</p></div>
+                    </div>
+
+                    ${data.evidence_main ? `<div class="mb-10"><h4 class="font-bold text-xs bg-gray-100 p-2 mb-4 uppercase border-l-4 border-yellow-400">Site Evidence Overview</h4><img src="${data.evidence_main}" class="w-full max-h-[400px] object-contain rounded border shadow-lg bg-black"></div>` : ''}
+                    
+                    <h4 class="font-bold text-xs bg-yellow-400 p-2 mb-4 border border-yellow-500 flex justify-between uppercase">Full Item Compliance (1-53) <span>Code</span></h4>
+                    <div class="space-y-0 border rounded overflow-hidden mb-12 shadow-sm">`;
+
+                Object.keys(data.items).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(key => {
+                    const item = data.items[key];
+                    const colorClass = item.code === 'P' ? 'bg-green-600 text-white' : item.code === 'x' ? 'bg-red-600 text-white' : 'bg-gray-400 text-white';
+                    const codeLabel = item.code === 'P' ? 'P (Compliant)' : item.code === 'x' ? 'x (Non-Compliant)' : 'N/A';
+                    
+                    html += `
+                        <div class="flex items-start gap-4 p-4 border-b last:border-b-0 bg-white print-item-break">
+                            <div class="w-8 font-black text-gray-400 text-sm">${key}</div>
+                            <div class="flex-grow">
+                                <p class="text-sm font-semibold text-gray-800">${item.questionText}</p>
+                                ${item.remarks ? `<p class="text-xs text-red-600 mt-1 font-bold italic">Finding: ${item.remarks}</p>` : ''}
+                                ${item.photo ? `<div class="mt-4"><p class="text-[9px] font-bold text-gray-300 uppercase mb-1">Attached Item Photo:</p><img src="${item.photo}" class="h-48 rounded border shadow-md"></div>` : ''}
+                            </div>
+                            <div class="min-w-[120px] text-center">
+                                <div class="px-2 py-1 rounded text-[10px] font-bold ${colorClass}">${codeLabel}</div>
+                            </div>
+                        </div>`;
+                });
+
+                html += `
+                    </div>
+                    <div class="mb-12 print-item-break">
+                        <h4 class="font-bold text-xs bg-gray-100 p-2 mb-4 uppercase border-l-4 border-yellow-400">Narrative Observations & Recommendations</h4>
+                        <div class="p-6 border rounded italic text-sm whitespace-pre-wrap leading-relaxed bg-yellow-50 text-gray-800 border-yellow-200 shadow-inner">${m.notes}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-12 mt-20 mb-20 text-center">
+                        <div class="border-t border-gray-400 pt-4">
+                            <img src="${data.signatures.head}" class="h-20 mx-auto mb-2 mix-blend-multiply">
+                            <p class="text-xs font-bold uppercase">${m.head}</p>
+                            <p class="text-[10px] text-gray-500 uppercase">Head of Department</p>
+                        </div>
+                        <div class="border-t border-gray-400 pt-4">
+                            <img src="${data.signatures.auditor}" class="h-24 mx-auto mb-2 mix-blend-multiply">
+                            <p class="text-xs font-bold uppercase">${m.auditor}</p>
+                            <p class="text-[10px] text-gray-500 uppercase">Lead Auditor</p>
+                        </div>
+                    </div>`;
+
+                document.getElementById('modalContent').innerHTML = html;
+                document.getElementById('reportModal').classList.remove('hidden');
+            } catch (e) { 
+                alert("Error retrieving full report. The data may be too large for Google Sheets to return via API."); 
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function closeModal() { document.getElementById('reportModal').classList.add('hidden'); }
+        function switchTab(t) {
+            document.getElementById('audit-form').classList.toggle('hidden', t !== 'audit-form');
+            document.getElementById('summary-view').classList.toggle('hidden', t !== 'summary-view');
+            if(t === 'summary-view') loadSummary();
         }
     </script>
 </body>
